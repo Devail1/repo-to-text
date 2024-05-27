@@ -4,6 +4,7 @@ import { useQuery } from "react-query";
 import axios from "axios";
 import FileList from "../components/FileList";
 import { NodeData } from "react-folder-tree";
+import { IFile } from "../types";
 
 const fetchRepoFiles = async (repoUrl: string) => {
   const token = process.env.NEXT_PUBLIC_GITHUB_API_TOKEN; // Replace this with your personal access token
@@ -24,12 +25,12 @@ const fetchRepoFiles = async (repoUrl: string) => {
     });
 
     const children = await Promise.all(
-      data.map(async (file: any) => {
-        if (file.type === "dir") {
-          const children = await fetchFiles(file.url);
-          return { name: file.name, children, path: file.path };
+      data.map(async ({ type, url, name, ...rest }: IFile) => {
+        if (type === "dir") {
+          const children = await fetchFiles(url);
+          return { name: name, children, props: rest };
         }
-        return { name: file.name, path: file.path };
+        return { name: name, props: rest };
       })
     );
 
