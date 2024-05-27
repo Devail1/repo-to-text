@@ -1,9 +1,9 @@
-'use client';
-import { useSearchParams } from 'next/navigation';
-import { useQuery } from 'react-query';
-import axios from 'axios';
-import FileList from '../components/FileList';
-import { NodeData } from 'react-folder-tree';
+"use client";
+import { useSearchParams } from "next/navigation";
+import { useQuery } from "react-query";
+import axios from "axios";
+import FileList from "../components/FileList";
+import { NodeData } from "react-folder-tree";
 
 const fetchRepoFiles = async (repoUrl: string) => {
   const token = process.env.NEXT_PUBLIC_GITHUB_API_TOKEN; // Replace this with your personal access token
@@ -20,16 +20,16 @@ const fetchRepoFiles = async (repoUrl: string) => {
       if (a.type === b.type) {
         return a.name.localeCompare(b.name);
       }
-      return a.type === 'dir' ? -1 : 1;
+      return a.type === "dir" ? -1 : 1;
     });
 
     const children = await Promise.all(
       data.map(async (file: any) => {
-        if (file.type === 'dir') {
+        if (file.type === "dir") {
           const children = await fetchFiles(file.url);
-          return { name: file.name, children };
+          return { name: file.name, children, path: file.path };
         }
-        return { name: file.name };
+        return { name: file.name, path: file.path };
       })
     );
 
@@ -41,11 +41,15 @@ const fetchRepoFiles = async (repoUrl: string) => {
 
 const RepoPage = () => {
   const searchParams = useSearchParams();
-  const url = searchParams.get('url');
+  const url = searchParams.get("url");
 
-  const { data, error, isLoading } = useQuery(['repoFiles', url], () => fetchRepoFiles(url as string), {
-    enabled: !!url,
-  });
+  const { data, error, isLoading } = useQuery(
+    ["repoFiles", url],
+    () => fetchRepoFiles(url as string),
+    {
+      enabled: !!url,
+    }
+  );
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading repository files.</div>;
